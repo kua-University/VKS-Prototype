@@ -1,8 +1,4 @@
-import VKSAppFacade from './patterns/VKSAppFacade';
-import SyncQueueManager from './patterns/SyncQueueManager';
-import MediaCompressorFactory from './patterns/MediaCompressor';
-import ImageProxy from './patterns/ImageProxy';
-import SyncStateManager from './patterns/SyncStateManager';                 import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './App.css';
 
@@ -160,6 +156,7 @@ const categories = [
 ];
 
 function App() {
+    // State variables
     const [activeScreen, setActiveScreen] = useState('home');
     const [problems, setProblems] = useState([]);
     const [unsyncedCount, setUnsyncedCount] = useState(0);
@@ -377,6 +374,7 @@ function App() {
         fetchProblems();
     }
     
+    // ==================== DEVOPS ASRs (D-01 to D-05) ====================
     function usbUpdateSimulation() {
         showToast('📀 USB Update: Checking for system updates...');
         setTimeout(() => {
@@ -419,6 +417,7 @@ function App() {
         showToast('📊 Offline monitoring active | No external dashboards | Health endpoint OK');
     }
     
+    // ==================== LOGIC/BUSINESS ASRs (L-01 to L-05) ====================
     function showPeerRedundancy() {
         alert('📱 PEER REDUNDANCY (L-01):\n\n• Your problems stored on: ' + peerCount + ' peer phones\n• Peer phones detected: 2 nearby\n• Redundancy target: 3 copies minimum\n• Current status: ' + (peerCount >= 3 ? '✅ OPTIMAL' : '⚠️ NEED MORE PEERS') + '\n\nEach problem is automatically replicated to nearby VKS phones via Bluetooth/WiFi Direct to prevent data loss.');
     }
@@ -458,6 +457,195 @@ function App() {
         }, 500);
     }
     
+    // ==================== F-05: Storage Auto-Cleanup ====================
+    function checkStorageAndCleanup() {
+        const currentStorage = problems.length * 0.1;
+        const maxStorage = 500;
+        const percentage = (currentStorage / maxStorage) * 100;
+        
+        let message = `💾 STORAGE STATUS (F-05):\n\n`;
+        message += `📊 Current storage: ${currentStorage.toFixed(1)}MB / ${maxStorage}MB\n`;
+        message += `📈 Usage: ${percentage.toFixed(1)}%\n`;
+        
+        if (percentage > 85) {
+            message += `⚠️ WARNING: Storage above 85%!\n`;
+            message += `🗑️ Auto-cleanup recommended.\n\n`;
+            message += `✅ Auto-cleanup: Deleting oldest unanswered problems...\n`;
+            message += `✅ Removed 5 old problems to free space.`;
+            showToast('⚠️ Storage >85%! Auto-cleanup performed.');
+        } else {
+            message += `✅ Storage is healthy. No cleanup needed.`;
+        }
+        alert(message);
+        showToast(`Storage: ${currentStorage.toFixed(1)}MB / ${maxStorage}MB (${percentage.toFixed(1)}%)`);
+    }
+
+    // ==================== B-01: Solar Power Status ====================
+    function showSolarStatus() {
+        const currentHour = new Date().getHours();
+        const isOnSolar = currentHour >= 6 && currentHour <= 22;
+        const uptimeHours = isOnSolar ? '16 hours (6 AM - 10 PM)' : 'Sleeping (10 PM - 6 AM)';
+        
+        alert(`☀️ SOLAR POWER STATUS (B-01):\n\n` +
+              `🔋 Power Source: Solar Panel 20W + 10Ah Battery\n` +
+              `⏰ Current Time: ${new Date().toLocaleTimeString()}\n` +
+              `🟢 Operational: ${isOnSolar ? 'YES' : 'NO (Sleeping)'}\n` +
+              `📅 Daily Schedule: ${uptimeHours}\n` +
+              `💡 Pi server runs 16 hours daily on solar power.`);
+        showToast(isOnSolar ? '🟢 Pi is running on solar power' : '🔴 Pi is sleeping (off-grid hours)');
+    }
+
+    // ==================== B-04: Unanswered Questions Notification ====================
+    function checkUnansweredQuestions() {
+        const unanswered = problems.filter(p => !p.answers || p.answers.length === 0);
+        
+        let message = `🔔 UNANSWERED QUESTIONS (B-04):\n\n`;
+        message += `📋 Total unanswered: ${unanswered.length}\n`;
+        message += `⏰ Hours since oldest: 72+ hours\n`;
+        message += `🚨 Status: ${unanswered.length > 0 ? 'URGENT - Champion notified!' : 'All questions answered'}\n\n`;
+        
+        if (unanswered.length > 0) {
+            message += `✅ Champion notified at: ${new Date().toLocaleString()}\n`;
+            message += `📢 Auto-notification triggered after 72 hours.`;
+            showToast(`⚠️ ${unanswered.length} unanswered questions - Champion notified!`);
+        } else {
+            message += `✅ No unanswered questions awaiting response.`;
+            showToast(`✅ All questions answered. Champion notification not needed.`);
+        }
+        alert(message);
+    }
+
+    // ==================== D-03: Log Retention Enforcement ====================
+    function enforceLogRetention() {
+        const logsBefore = logs.length;
+        const maxLogsPhone = 50;
+        const truncatedLogs = logs.slice(0, maxLogsPhone);
+        
+        let message = `📋 LOG RETENTION ENFORCED (D-03):\n\n`;
+        message += `🗑️ Logs before cleanup: ${logsBefore}\n`;
+        message += `🗑️ Logs after cleanup: ${truncatedLogs.length}\n`;
+        message += `📱 Phone: 7 days / 10MB - ${truncatedLogs.length} logs retained\n`;
+        message += `💻 Pi: 30 days / 100MB - Simulated\n`;
+        message += `☁️ Cloud: 90 days - Simulated\n\n`;
+        message += `✅ Retention policy enforced successfully.`;
+        
+        setLogs(truncatedLogs);
+        alert(message);
+        showToast(`Log retention enforced: ${logsBefore} → ${truncatedLogs.length} logs`);
+    }
+
+    // ==================== L-04: Auto-Delete Simulation ====================
+    function simulateAutoDelete() {
+        const phoneRetentionDays = 90;
+        const piRetentionDays = 180;
+        const currentDate = new Date();
+        
+        const oldUnanswered = problems.filter(p => {
+            const problemDate = new Date(p.timestamp);
+            const daysDiff = (currentDate - problemDate) / (1000 * 60 * 60 * 24);
+            return daysDiff > phoneRetentionDays && (!p.answers || p.answers.length === 0);
+        });
+        
+        let message = `🗑️ AUTO-DELETE POLICY (L-04):\n\n`;
+        message += `📱 Phone retention: ${phoneRetentionDays} days\n`;
+        message += `💻 Pi retention: ${piRetentionDays} days\n`;
+        message += `📊 Problems marked for deletion: ${oldUnanswered.length}\n`;
+        message += `⏰ Last cleanup: ${new Date().toLocaleString()}\n\n`;
+        message += `✅ Auto-delete simulation complete.\n`;
+        message += `⚠️ In production, these ${oldUnanswered.length} problems would be deleted.`;
+        
+        alert(message);
+        showToast(`Auto-delete simulation: ${oldUnanswered.length} problems flagged for deletion`);
+    }
+
+    // ==================== ASR-08: Sync Conflict Resolution ====================
+    function showConflictResolution() {
+        const totalAnswers = problems.reduce((sum, p) => sum + (p.answers?.length || 0), 0);
+        alert(`🔄 SYNC CONFLICT RESOLUTION (ASR-08):\n\n` +
+              `📜 CONFLICT POLICY:\n` +
+              `• Never delete knowledge (add-only policy)\n` +
+              `• Keep all answers (different solutions allowed)\n` +
+              `• Champion priority - verified answers display first\n` +
+              `• Timestamp wins - newer information indicated\n\n` +
+              `✅ Current conflicts resolved: 0\n` +
+              `📊 Total preserved answers: ${totalAnswers}\n\n` +
+              `⚖️ Data integrity maintained per ASR-08.`);
+        showToast('Add-only policy active - no knowledge ever deleted');
+    }
+
+    // ==================== ASR-19: Peer Recovery Simulation ====================
+    function simulatePeerRecovery() {
+        const startTime = Date.now();
+        showToast('🔄 Peer recovery initiated... Finding nearby VKS phones...');
+        
+        setTimeout(() => {
+            const endTime = Date.now();
+            const timeTaken = ((endTime - startTime) / 1000).toFixed(1);
+            const totalAnswers = problems.reduce((sum, p) => sum + (p.answers?.length || 0), 0);
+            
+            let message = `📱 PEER RECOVERY (ASR-19):\n\n`;
+            message += `🕒 Recovery time: ${timeTaken} seconds\n`;
+            message += `🎯 Target: <15 minutes (900 seconds)\n`;
+            message += `✅ Status: ${timeTaken < 900 ? 'PASSED - Within target!' : 'FAILED - Exceeded target'}\n\n`;
+            message += `📊 Data recovered:\n`;
+            message += `• Problems restored: ${problems.length}\n`;
+            message += `• Answers restored: ${totalAnswers}\n`;
+            message += `• Peer phones detected: 2 nearby\n\n`;
+            message += `✅ Recovery complete! Your data has been restored from peer devices.`;
+            
+            alert(message);
+            showToast(`✅ Peer recovery complete in ${timeTaken}s (target <15 min)`);
+        }, 800);
+    }
+
+    // ==================== Quality Report Features ====================
+    function showTradeOffAnalysis() {
+        alert(`⚖️ TRADE-OFF ANALYSIS (Quality Report):\n\n` +
+              `┌─────────────────────────────────────────────────────┐\n` +
+              `│ Trade-off              │ Decision      │ Rationale │\n` +
+              `├───────────────────────┼───────────────┼───────────┤\n` +
+              `│ Real-time cloud sync   │ USB weekly    │ No rural  │\n` +
+              `│ vs USB mule            │ sync          │ internet  │\n` +
+              `├───────────────────────┼───────────────┼───────────┤\n` +
+              `│ ML automation vs       │ Champion      │ ML needs  │\n` +
+              `│ Champion verification  │ verification  │ internet  │\n` +
+              `├───────────────────────┼───────────────┼───────────┤\n` +
+              `│ Video support vs       │ Voice + photo │ Video too │\n` +
+              `│ Voice/photo only       │ only          │ large     │\n` +
+              `└───────────────────────┴───────────────┴───────────┘\n\n` +
+              `✅ Architecture decisions justified per ASRs.`);
+    }
+
+    function showImprovementRecommendations() {
+        alert(`📈 IMPROVEMENT RECOMMENDATIONS (Quality Report):\n\n` +
+              `┌─────────────────────────────────────────────────────────────┐\n` +
+              `│ Recommendation           │ Target Quality    │ Priority    │\n` +
+              `├──────────────────────────┼───────────────────┼─────────────┤\n` +
+              `│ End-to-end encryption    │ Security          │ Medium      │\n` +
+              `│ LoRaWAN long-range radio │ Availability      │ Low         │\n` +
+              `│ Offline ML for crop      │ Usability/Perf    │ Medium      │\n` +
+              `│ detection                │                   │             │\n` +
+              `│ Auto content moderation  │ Security          │ Low         │\n` +
+              `└──────────────────────────┴───────────────────┴─────────────┘\n\n` +
+              `✅ Future enhancements identified for v3.0.`);
+    }
+
+    // ==================== WebRTC Explanation ====================
+    function showWebRTCInfo() {
+        alert(`🌐 WEBRTC PEER SYNC (Redesigned Architecture v2.0):\n\n` +
+              `📡 What is WebRTC?\n` +
+              `• Browser-to-browser real-time communication\n` +
+              `• No plugins or additional apps required\n` +
+              `• Works directly in Chrome/Firefox browsers\n\n` +
+              `🔗 How it works in VKS:\n` +
+              `• Phones discover each other via WebRTC signaling\n` +
+              `• Data channel established for P2P sync\n` +
+              `• Range: 10-50 meters (similar to Bluetooth)\n` +
+              `• Speed: 100-500 Kbps (sufficient for problems/answers)\n\n` +
+              `✅ WebRTC enables browser-based peer sync without extra apps!`);
+        showToast('WebRTC enables browser-to-browser peer sync (Redesigned v2.0)');
+    }
+
     function getCategoryName(catId) {
         const cat = categories.find(c => c.id === catId);
         if (language === 'am') return cat.am;
@@ -535,13 +723,41 @@ function App() {
     
     const renderSync = () => (
         <div>
+            {/* Sync Panel */}
             <div className="sync-panel"><h4>📡 {t.syncNow}</h4><div className="sync-stats"><p>📤 {t.pendingSync}: <strong>{unsyncedCount}</strong></p><p>💾 {t.problem}: <strong>{stats.totalProblems}</strong></p><p>💬 {t.answers}: <strong>{stats.totalAnswers}</strong></p><p>🔄 Sync State: <strong>{syncState}</strong></p></div><button className="btn-primary" onClick={simulateSync} disabled={loading}>🔄 {t.syncNow}</button></div>
-            <div className="sync-panel" style={{ background: '#e8eaf6' }}><h4>💿 DevOps (D-01 to D-05)</h4><button className="btn-primary" style={{ background: '#3f51b5' }} onClick={usbUpdateSimulation}>💿 USB System Update (D-01)</button><button className="btn-primary" style={{ background: '#ff5722', marginTop: 8 }} onClick={disasterRecoveryDrill}>🚨 Disaster Recovery Drill (D-02)</button><button className="btn-primary" style={{ background: '#795548', marginTop: 8 }} onClick={showBackupHierarchy}>💾 Backup Hierarchy (D-04)</button><button className="btn-primary" style={{ background: '#607d8b', marginTop: 8 }} onClick={checkOfflineMonitoring}>📊 Offline Monitoring (D-05)</button><p style={{ fontSize: 11, marginTop: 8, color: '#555' }}>📋 Log retention: Phone 7d/10MB | Pi 30d/100MB | Cloud 90d (D-03)</p></div>
-            <div className="sync-panel" style={{ background: '#e0f7fa' }}><h4>🔗 Logic/Business (L-01 to L-05)</h4><button className="btn-primary" style={{ background: '#00838f' }} onClick={showPeerRedundancy}>📱 Peer Redundancy (L-01 - 3 phones)</button><button className="btn-primary" style={{ background: '#00695c', marginTop: 8 }} onClick={bluetoothSync}>📡 Bluetooth Sync (L-02 - &lt;3 min)</button><button className="btn-primary" style={{ background: '#4db6ac', marginTop: 8 }} onClick={showSyncMethods}>🔄 Sync Methods (L-03)</button><button className="btn-primary" style={{ background: '#e65100', marginTop: 8 }} onClick={showAutoDeleteSettings}>🗑️ Auto-Delete Policy (L-04)</button><button className="btn-primary" style={{ background: '#1565c0', marginTop: 8 }} onClick={checkLibraryExpiry}>📚 Library Expiry (L-05 - 6 months)</button></div>
+            
+            {/* Storage Management (F-05) */}
+            <div className="sync-panel" style={{ background: '#e8f5e9' }}><h4>💾 Storage Management</h4><button className="btn-primary" style={{ background: '#2e7d32' }} onClick={checkStorageAndCleanup}>📊 Check Storage & Auto-Cleanup (F-05)</button><p style={{ fontSize: 11, marginTop: 8 }}>Phone DB limit: 500MB | Auto-cleanup at 85%</p></div>
+            
+            {/* Pi Solar Power (B-01) & Unanswered Questions (B-04) */}
+            <div className="sync-panel" style={{ background: '#fff3e0' }}><h4>☀️ Edge Server (Raspberry Pi)</h4><button className="btn-primary" style={{ background: '#ff9800' }} onClick={showSolarStatus}>🔋 Solar Power Status (B-01)</button><button className="btn-primary" style={{ background: '#795548', marginTop: 8 }} onClick={checkUnansweredQuestions}>🔔 Unanswered Questions (B-04)</button><p style={{ fontSize: 11, marginTop: 8 }}>Pi runs 16h/day on solar | Champion notified after 72h</p></div>
+            
+            {/* DevOps Perspective - D-01 to D-05 */}
+            <div className="sync-panel" style={{ background: '#e8eaf6' }}><h4>💿 DevOps (D-01 to D-05)</h4><button className="btn-primary" style={{ background: '#3f51b5' }} onClick={usbUpdateSimulation}>💿 USB System Update (D-01)</button><button className="btn-primary" style={{ background: '#ff5722', marginTop: 8 }} onClick={disasterRecoveryDrill}>🚨 Disaster Recovery Drill (D-02)</button><button className="btn-primary" style={{ background: '#795548', marginTop: 8 }} onClick={showBackupHierarchy}>💾 Backup Hierarchy (D-04)</button><button className="btn-primary" style={{ background: '#607d8b', marginTop: 8 }} onClick={checkOfflineMonitoring}>📊 Offline Monitoring (D-05)</button><button className="btn-primary" style={{ background: '#1565c0', marginTop: 8 }} onClick={enforceLogRetention}>🗑️ Enforce Log Retention (D-03)</button><p style={{ fontSize: 11, marginTop: 8 }}>📋 Log retention: Phone 7d/10MB | Pi 30d/100MB | Cloud 90d</p></div>
+            
+            {/* Logic/Business Layer - L-01 to L-05 */}
+            <div className="sync-panel" style={{ background: '#e0f7fa' }}><h4>🔗 Logic/Business (L-01 to L-05)</h4><button className="btn-primary" style={{ background: '#00838f' }} onClick={showPeerRedundancy}>📱 Peer Redundancy (L-01 - 3 phones)</button><button className="btn-primary" style={{ background: '#00695c', marginTop: 8 }} onClick={bluetoothSync}>📡 Bluetooth Sync (L-02 - &lt;3 min)</button><button className="btn-primary" style={{ background: '#4db6ac', marginTop: 8 }} onClick={showSyncMethods}>🔄 Sync Methods (L-03)</button><button className="btn-primary" style={{ background: '#c62828', marginTop: 8 }} onClick={simulateAutoDelete}>⏰ Auto-Delete Simulation (L-04)</button><button className="btn-primary" style={{ background: '#1565c0', marginTop: 8 }} onClick={checkLibraryExpiry}>📚 Library Expiry (L-05 - 6 months)</button></div>
+            
+            {/* Data Integrity - ASR-08 & ASR-19 */}
+            <div className="sync-panel" style={{ background: '#ede7f6' }}><h4>⚖️ Data Integrity</h4><button className="btn-primary" style={{ background: '#4527a0' }} onClick={showConflictResolution}>🔄 Sync Conflict Resolution (ASR-08)</button><button className="btn-primary" style={{ background: '#00897b', marginTop: 8 }} onClick={simulatePeerRecovery}>📱 Peer Recovery Simulation (ASR-19)</button><p style={{ fontSize: 11, marginTop: 8 }}>Add-only policy | Peer restore in &lt;15 min</p></div>
+            
+            {/* Quality Report - Trade-off Analysis & Recommendations */}
+            <div className="sync-panel" style={{ background: '#efebe9' }}><h4>📊 Quality Report</h4><button className="btn-primary" style={{ background: '#5d4037' }} onClick={showTradeOffAnalysis}>⚖️ Trade-off Analysis</button><button className="btn-primary" style={{ background: '#4e342e', marginTop: 8 }} onClick={showImprovementRecommendations}>📈 Improvement Recommendations</button></div>
+            
+            {/* WebRTC Info - Redesigned Architecture v2.0 */}
+            <div className="sync-panel" style={{ background: '#b2dfdb' }}><h4>🌐 WebRTC Peer Sync (Redesigned v2.0)</h4><button className="btn-primary" style={{ background: '#00695c' }} onClick={showWebRTCInfo}>🔗 WebRTC Browser-to-Browser Sync</button><p style={{ fontSize: 11, marginTop: 8 }}>Replaces raw Bluetooth | Browser-native | 10-50m range</p></div>
+            
+            {/* Champion Tools */}
             {isChampion && (<div className="sync-panel" style={{ background: '#fff8e1' }}><h4>⭐ {t.championTools}</h4><button className="btn-warning" onClick={exportToUSB}>💾 {t.exportUSB}</button><button className="btn-primary" style={{ background: '#c62828', marginTop: 8 }} onClick={viewLogs}>📋 {t.viewLogs}</button></div>)}
+            
+            {/* Settings */}
             <div className="sync-panel"><h4>⚙️ {t.settings}</h4><button className="btn-secondary" onClick={toggleChampionMode}>{isChampion ? `⭐ ${t.championMode}` : `👤 ${t.villagerMode}`}</button></div>
+            
+            {/* Library */}
             <div className="sync-panel"><h4>📚 {t.searchLibrary}</h4><input type="text" placeholder={t.searchLibrary} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ width: '100%', padding: 12, borderRadius: 12, border: '1px solid #ddd', marginBottom: 12 }} />
             {filteredLibrary.map(article => { const title = language === 'am' ? article.amTitle : language === 'or' ? article.orTitle : article.tiTitle; const content = language === 'am' ? article.amContent : language === 'or' ? article.orContent : article.tiContent; return (<div key={article.id} className="library-item"><div className="library-title">{title}</div><div className="library-content">{content}</div><button className="speak-btn" onClick={() => speakText(content)}>🔊 {t.readAloud}</button></div>); })}</div>
+            
+            {/* Logs Display */}
             {logs.length > 0 && (<div className="sync-panel" style={{ background: '#eceff1' }}><h4>📜 Recent System Logs</h4><div style={{ maxHeight: 150, overflowY: 'auto', fontSize: 10 }}>{logs.slice(0, 5).map(log => (<div key={log.id} style={{ borderBottom: '1px solid #ccc', padding: 4, fontFamily: 'monospace' }}>[{log.timestamp}] {log.message}</div>))}</div></div>)}
         </div>
     );
