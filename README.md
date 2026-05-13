@@ -10,7 +10,7 @@
 
 ---
 
-## 📌 Important Note to the Instructor
+## 📌 Important Note
 
 This prototype implements the **complete redesigned architecture** as specified in the ASRS document. The following components are fully implemented:
 
@@ -27,7 +27,7 @@ This prototype implements the **complete redesigned architecture** as specified 
 
 ---
 
-## 🎯 What This Prototype Represents
+## 🎯 What This my Prototype Represents
 
 The **Village Knowledge System (VKS)** is an **offline-first community platform** designed for rural villages in **Ethiopia**.
 
@@ -57,7 +57,7 @@ text
 
 ---
 
-## 🎨 Five Design Patterns Implemented
+## 🎨 Five Design Patterns those i have Implemented
 
 | # | Pattern | Purpose |
 |:-:|:---|:---|
@@ -95,7 +95,7 @@ text
 
 ---
 
-## 📡 Technology Stack (Version 2.0)
+## 📡 Technology Stack that i use (Version 2.0)
 
 | Component | Version 1.0 | Version 2.0 (Redesigned) |
 |:---|:---|:---|
@@ -117,7 +117,7 @@ text
 
 ---
 
-## ✅ All ASRs Implemented
+## ✅ All ASRs that i have Implemented
 
 - **Frontend (F-01 to F-05)** - Voice reporting, 3 languages, 500MB limit
 - **Backend (B-01 to B-05)** - Solar Pi, add-only policy, champion badge
